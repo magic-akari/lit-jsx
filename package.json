@@ -1,10 +1,17 @@
 {
   "name": "lit-jsx",
-  "version": "0.0.0",
+  "version": "1.0.2",
   "description": "Runtime JSX Parser",
-  "main": "index.js",
+  "main": "dist/litjsx.umd.js",
+  "umd:main": "dist/litjsx.umd.js",
+  "jsnext:main": "dist/litjsx.esm.mjs",
+  "module": "dist/litjsx.esm.mjs",
+  "types": "./dist/litjsx.d.ts",
+  "files": ["dist"],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c",
+    "pretest": "npm run build",
+    "test": "ava test"
   },
   "repository": {
     "type": "git",
@@ -20,5 +27,12 @@
   "bugs": {
     "url": "https://github.com/hufan-akari/lit-jsx/issues"
   },
-  "homepage": "https://github.com/hufan-akari/lit-jsx#readme"
+  "homepage": "https://github.com/hufan-akari/lit-jsx#readme",
+  "devDependencies": {
+    "ava": "1.0.0-beta.4",
+    "rollup": "^0.58.2",
+    "rollup-plugin-babel-minify": "^4.0.0",
+    "rollup-plugin-typescript2": "^0.14.0",
+    "typescript": "^2.8.3"
+  }
 }
