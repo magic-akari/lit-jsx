@@ -20,7 +20,7 @@ const tokenizer = (strings: TemplateStringsArray): Token[] => {
     for (const iterator of block) {
       if (iterator[0] === "<" || inBrace) {
         let tokens = iterator
-          .split(/(<\/?>|<\/?|\/?>|\.{3}|\S+?\=)/)
+          .split(/(<\/?>|<\/?|\/?>|\.{3}|\S+?\=|\s+)/)
           .map(s => s.trim())
           .filter(s => s !== $string_empty);
 
@@ -106,17 +106,21 @@ const parser = (tokens: Token[]) => {
           } else if (isPlaceholder && typeof rightTagName !== "string") {
             // ok
           } else {
-            throw new SyntaxError("not matched");
+            throw new SyntaxError(
+              `unexpected token: ${rightTagName} tag not matched ${jsxElementName}`
+            );
           }
           skip(2);
         } else {
-          throw new SyntaxError("unexpected token");
+          throw new SyntaxError(
+            `unexpected token near: ${rightTag} , ${rightTagName} and ${rightClosingTag}`
+          );
         }
       }
 
       return { jsxElementName, jsxAttributes, jsxChildren };
     } else if (token === ">" || token === "/>" || token === "</>") {
-      throw new SyntaxError("unexpected token");
+      throw new SyntaxError(`unexpected token: ${token} after: ${peak(-1)}`);
     } else {
       return token;
     }
@@ -127,32 +131,45 @@ const parser = (tokens: Token[]) => {
 
     while (peak() !== ">" && peak() !== "/>") {
       let attributeName = next();
-      let attributeValue = next();
+      let attributeValue: Token | boolean = peak();
 
-      if (typeof attributeName !== "string" || attributeValue === undefined) {
-        throw new SyntaxError("unexpected token");
+      if (typeof attributeName !== "string") {
+        throw new SyntaxError(
+          `unexpected inserted token: ${attributeName}, attributeName must be literals`
+        );
       }
 
-      if (
-        attributeName === "..." &&
-        typeof attributeValue !== "string" &&
-        attributeValue[$placeholder] !== undefined
-      ) {
+      if (attributeName === "...") {
+        if (typeof attributeValue === "string") {
+          throw new SyntaxError(
+            `unexpected token: ${attributeValue} after: ${attributeName}`
+          );
+        }
         jsxAttributes.push(attributeValue);
-      } else if (/=$/.test(attributeName)) {
-        attributeName = attributeName.slice(0, -1);
+        skip();
+      } else if (/^[\_\$\w][\_\$\w\d]*\=?$/.test(attributeName)) {
+        if (attributeName[attributeName.length - 1] === "=") {
+          attributeName = attributeName.slice(0, -1);
+          skip();
+        } else {
+          attributeValue = true;
+        }
 
         if (typeof attributeValue === "string") {
           if (/^(['"]).*\1$/.test(attributeValue)) {
             attributeValue = attributeValue.slice(1, -1);
           } else {
-            throw new SyntaxError("attributeValue must be quoted");
+            throw new SyntaxError(
+              `attributeValue must be quoted: ${attributeValue}`
+            );
           }
         }
 
         jsxAttributes.push({ [attributeName]: attributeValue });
       } else {
-        throw new SyntaxError(`unexpected token ${peak()}`);
+        throw new SyntaxError(
+          `unexpected token: ${attributeName} after: ${peak(-2)}`
+        );
       }
     }
     return jsxAttributes;
@@ -161,7 +178,7 @@ const parser = (tokens: Token[]) => {
   const result = getElement(next());
 
   if (index !== tokens.length) {
-    throw new SyntaxError(`unexpected token ${peak()}`);
+    throw new SyntaxError(`unexpected token: ${peak()} after: ${peak(-1)}`);
   }
 
   return result;

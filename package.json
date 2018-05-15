@@ -1,6 +1,6 @@
 {
   "name": "lit-jsx",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Runtime JSX Parser",
   "main": "dist/litjsx.umd.js",
   "umd:main": "dist/litjsx.umd.js",

@@ -1,8 +1,8 @@
 import test from "ava";
 import litjsx from "../dist/litjsx.umd.js";
 
-const createElement = (name, attrbutes, ...children) => {
-  return { name, attrbutes, children };
+const createElement = (name, attributes, ...children) => {
+  return { name, attributes, children };
 };
 
 const Fragment = Symbol(`Fragment`);
@@ -19,7 +19,7 @@ test(`shoulr parse 123`, t => {
 test(`should parse <></>`, t => {
   t.deepEqual(litjsx({ React })`<></>`, {
     name: Fragment,
-    attrbutes: {},
+    attributes: {},
     children: []
   });
 });
@@ -27,7 +27,7 @@ test(`should parse <></>`, t => {
 test(`should parse <>Fragment</>`, t => {
   t.deepEqual(litjsx({ React })`<>Fragment</>`, {
     name: Fragment,
-    attrbutes: {},
+    attributes: {},
     children: [`Fragment`]
   });
 });
@@ -35,7 +35,7 @@ test(`should parse <>Fragment</>`, t => {
 test(`should parse <tag/>`, t => {
   t.deepEqual(litjsx({ React })`<tag />`, {
     name: `tag`,
-    attrbutes: {},
+    attributes: {},
     children: []
   });
 });
@@ -43,7 +43,7 @@ test(`should parse <tag/>`, t => {
 test(`should parse <tag><tag/>`, t => {
   t.deepEqual(litjsx({ React })`<tag></tag>`, {
     name: `tag`,
-    attrbutes: {},
+    attributes: {},
     children: []
   });
 });
@@ -51,57 +51,65 @@ test(`should parse <tag><tag/>`, t => {
 test(`should parse <p>hello,world</p>`, t => {
   t.deepEqual(litjsx({ React })`<p>hello,world</p>`, {
     name: `p`,
-    attrbutes: {},
+    attributes: {},
     children: [`hello,world`]
   });
 });
 
-test(`should parse attrbutes`, t => {
+test(`should parse attributes`, t => {
   t.deepEqual(litjsx({ React })`<p className="greeting">hi</p>`, {
     name: `p`,
-    attrbutes: { className: `greeting` },
+    attributes: { className: `greeting` },
     children: [`hi`]
+  });
+});
+
+test(`should parse boolean attributes`, t => {
+  t.deepEqual(litjsx({ React })`<button disabled>attack</button>`, {
+    name: `button`,
+    attributes: { disabled: true },
+    children: [`attack`]
   });
 });
 
 test(`should parse inject value`, t => {
   t.deepEqual(litjsx({ React })`<p className=${"greeting"}>${"hi"}</p>`, {
     name: `p`,
-    attrbutes: { className: `greeting` },
+    attributes: { className: `greeting` },
     children: [`hi`]
   });
 });
 
-test(`should parse spread attrbutes`, t => {
+test(`should parse spread attributes`, t => {
   t.deepEqual(
     litjsx({ React })`<p ...${{ id: "hello", className: "greeting" }}>hi</p>`,
     {
       name: `p`,
-      attrbutes: { id: "hello", className: `greeting` },
+      attributes: { id: "hello", className: `greeting` },
       children: [`hi`]
     }
   );
 });
 
-test(`should parse mixed attrbutes`, t => {
+test(`should parse mixed attributes`, t => {
   t.deepEqual(
     litjsx({ React })`<p id="hello"  ...${{ className: "greeting" }}>hi</p>`,
     {
       name: `p`,
-      attrbutes: { id: "hello", className: `greeting` },
+      attributes: { id: "hello", className: `greeting` },
       children: [`hi`]
     }
   );
 });
 
-test(`should override attrbutes`, t => {
+test(`should override attributes`, t => {
   t.deepEqual(
     litjsx({ React })`<p className="hello"  ...${{
       className: "greeting"
     }}>hi</p>`,
     {
       name: `p`,
-      attrbutes: { className: `greeting` },
+      attributes: { className: `greeting` },
       children: [`hi`]
     }
   );
@@ -112,7 +120,7 @@ test(`should override attrbutes`, t => {
     }}  className=${"hello"}>hi</p>`,
     {
       name: `p`,
-      attrbutes: { className: `hello` },
+      attributes: { className: `hello` },
       children: [`hi`]
     }
   );
@@ -121,11 +129,11 @@ test(`should override attrbutes`, t => {
 test(`should parse <a><b/></a>`, t => {
   t.deepEqual(litjsx({ React })`<a><b/></a>`, {
     name: `a`,
-    attrbutes: {},
+    attributes: {},
     children: [
       {
         name: `b`,
-        attrbutes: {},
+        attributes: {},
         children: []
       }
     ]
@@ -135,11 +143,11 @@ test(`should parse <a><b/></a>`, t => {
 test(`should parse <a id="a"><b className="b" /></a>`, t => {
   t.deepEqual(litjsx({ React })`<a id=${"a"}><b className="b" /></a>`, {
     name: `a`,
-    attrbutes: { id: `a` },
+    attributes: { id: `a` },
     children: [
       {
         name: `b`,
-        attrbutes: { className: `b` },
+        attributes: { className: `b` },
         children: []
       }
     ]
@@ -149,22 +157,25 @@ test(`should parse <a id="a"><b className="b" /></a>`, t => {
 test(`should parse inject tag`, t => {
   class Header {}
   class Footer {}
-  t.deepEqual(litjsx({ React })`<><${Header} title=${"test"}/><${Footer} /></>`, {
-    name: Fragment,
-    attrbutes: {},
-    children: [
-      {
-        name: Header,
-        attrbutes: { title: "test" },
-        children: []
-      },
-      {
-        name: Footer,
-        attrbutes: {},
-        children: []
-      }
-    ]
-  });
+  t.deepEqual(
+    litjsx({ React })`<><${Header} title=${"test"}/><${Footer} /></>`,
+    {
+      name: Fragment,
+      attributes: {},
+      children: [
+        {
+          name: Header,
+          attributes: { title: "test" },
+          children: []
+        },
+        {
+          name: Footer,
+          attributes: {},
+          children: []
+        }
+      ]
+    }
+  );
 });
 
 test("should parse list", t => {
@@ -174,11 +185,11 @@ test("should parse list", t => {
     jsx`<ul>${list.map((l, i) => jsx`<li key=${i}>the ${l} line</li>`)}</ul>`,
     {
       name: `ul`,
-      attrbutes: {},
+      attributes: {},
       children: [
         list.map((l, i) => ({
           name: "li",
-          attrbutes: { key: i },
+          attributes: { key: i },
           children: ["the", l, "line"]
         }))
       ]
@@ -190,25 +201,25 @@ test("parse a 10000 tags templete", t => {
   let tempelete = "<>";
   let result = {
     name: Fragment,
-    attrbutes: {},
+    attributes: {},
     children: []
   };
   for (let i = 0; i < 10000; i++) {
     if (Math.random() > 0.33) {
       tempelete += "<tag/>";
-      result.children.push({ name: "tag", attrbutes: {}, children: [] });
+      result.children.push({ name: "tag", attributes: {}, children: [] });
     } else if (Math.random() > 0.5) {
       tempelete += "<tag>only text here</tag>";
       result.children.push({
         name: "tag",
-        attrbutes: {},
+        attributes: {},
         children: ["only text here"]
       });
     } else {
-      tempelete += `<tag a="123" b='456' />`;
+      tempelete += `<tag a="123" b='456' ok/>`;
       result.children.push({
         name: "tag",
-        attrbutes: { a: "123", b: "456" },
+        attributes: { a: "123", b: "456", ok: true },
         children: []
       });
     }
@@ -227,8 +238,7 @@ test(`throw`, t => {
   t.throws(() => jsx`<p>`);
   t.throws(() => jsx`<p></q>`);
   t.throws(() => jsx`<p></>`);
-  t.throws(() => jsx`<p><q></p>`);  
-  t.throws(() => jsx`<tag className></tag>`);
+  t.throws(() => jsx`<p><q></p>`);
   t.throws(() => jsx`<tag className=></tag>`);
   t.throws(() => jsx`<tag ... ></tag>`);
   t.throws(() => jsx`<tag ...className></tag>`);
