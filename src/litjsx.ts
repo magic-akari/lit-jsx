@@ -14,15 +14,14 @@ const tokenizer = (strings: TemplateStringsArray): Token[] => {
   for (let index = 0; index < length; ++index) {
     const string = strings[index];
     const block = string
-      .split(/(<.*?\>|^[^<]*?>|<[^>]*?$)/)
+      .split(/((?:<|^)[^<>]*?(?:>|$))/)
       .filter(s => s.trim() !== $string_empty);
 
     for (const iterator of block) {
       if (iterator[0] === "<" || inBrace) {
         let tokens = iterator
-          .split(/(<\/?>|<\/?|\/?>|\.{3}|\S+?\=|\s+)/)
-          .map(s => s.trim())
-          .filter(s => s !== $string_empty);
+          .split(/(<\/?>|<\/?|\/?>|\.{3}|'.*?'|".*?"|\s+)/)
+          .filter(s => s.trim() !== $string_empty);
 
         result = result.concat(tokens);
         inBrace = !/>$/.test(tokens[tokens.length - 1]);
@@ -239,11 +238,8 @@ const litjsx = ({
     (() => {
       throw new Error("pragma required");
     });
-  let fragment =
-    pragmaFrag ||
-    (() => {
-      throw new Error("pragmaFrag required");
-    });
+  let fragment = pragmaFrag || new Error("pragmaFrag required");
+
   if (React !== undefined) {
     h = React.createElement;
     fragment = React.Fragment;

@@ -64,6 +64,14 @@ test(`should parse attributes`, t => {
   });
 });
 
+test(`should parse attributes which contain space`, t => {
+  t.deepEqual(litjsx({ React })`<p className="greeting title">hi</p>`, {
+    name: `p`,
+    attributes: { className: `greeting title` },
+    children: [`hi`]
+  });
+});
+
 test(`should parse boolean attributes`, t => {
   t.deepEqual(litjsx({ React })`<button disabled>attack</button>`, {
     name: `button`,
@@ -229,6 +237,8 @@ test("parse a 10000 tags templete", t => {
 });
 
 test(`throw`, t => {
+  t.throws(() => litjsx()`<></>`);
+  
   const jsx = litjsx({ React });
   t.throws(() => jsx`<`);
   t.throws(() => jsx`>`);
