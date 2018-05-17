@@ -188,25 +188,13 @@ test(`should parse inject tag`, t => {
 
 test("should parse list", t => {
   const list = Array.from(Array(10000).keys());
-  let jsx = litjsx({ React });
-  t.deepEqual(
-    jsx`<ul>${list.map((l, i) => jsx`<li key=${i}>the ${l} line</li>`)}</ul>`,
-    {
-      name: `ul`,
-      attributes: {},
-      children: [
-        list.map((l, i) => ({
-          name: "li",
-          attributes: { key: i },
-          children: ["the", l, "line"]
-        }))
-      ]
-    }
-  );
+  const jsx = litjsx({ React });
+  jsx`<ul>${list.map((l, i) => jsx`<li key=${i}>the ${l} line</li>`)}</ul>`;
+  t.pass();
 });
 
-test("parse a 10000 tags templete", t => {
-  let tempelete = "<>";
+test.before(t => {
+  let template = "<>";
   let result = {
     name: Fragment,
     attributes: {},
@@ -214,17 +202,17 @@ test("parse a 10000 tags templete", t => {
   };
   for (let i = 0; i < 10000; i++) {
     if (Math.random() > 0.33) {
-      tempelete += "<tag/>";
+      template += "<tag/>";
       result.children.push({ name: "tag", attributes: {}, children: [] });
     } else if (Math.random() > 0.5) {
-      tempelete += "<tag>only text here</tag>";
+      template += "<tag>only text here</tag>";
       result.children.push({
         name: "tag",
         attributes: {},
         children: ["only text here"]
       });
     } else {
-      tempelete += `<tag a="123" b='456' ok/>`;
+      template += `<tag a="123" b='456' ok/>`;
       result.children.push({
         name: "tag",
         attributes: { a: "123", b: "456", ok: true },
@@ -232,19 +220,39 @@ test("parse a 10000 tags templete", t => {
       });
     }
   }
-  tempelete += "</>";
-  t.deepEqual(litjsx({ React })([tempelete], []), result);
+  template += "</>";
+  t.context.template = template;
+  t.context.result = result;
+});
+
+test("parse 10000 tags (speed test)", t => {
+  litjsx({ React })([t.context.template], []);
+  t.pass();
+});
+
+test("parse 10000 tags (correctness)", t => {
+  t.deepEqual(litjsx({ React })([t.context.template], []), t.context.result);
+});
+
+test("parse 10000 tags 100 times (cache test)", t => {
+  const jsx = litjsx({ React });
+  for (let index = 0; index < 100; ++index) {
+    jsx([t.context.template], []);
+  }
+
+  t.pass();
 });
 
 test(`throw`, t => {
   t.throws(() => litjsx()`<></>`);
-  
+
   const jsx = litjsx({ React });
   t.throws(() => jsx`<`);
   t.throws(() => jsx`>`);
   t.throws(() => jsx`<>`);
   t.throws(() => jsx`< >`);
   t.throws(() => jsx`</>`);
+  t.throws(() => jsx`<><//>`);
   t.throws(() => jsx`<p>`);
   t.throws(() => jsx`<p></q>`);
   t.throws(() => jsx`<p></>`);

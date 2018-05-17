@@ -1,9 +1,12 @@
-const $placeholder = Symbol("placeholder");
 const $fragment = Symbol("fragment");
 const $string_empty = "";
 
-type PlaceHolder = { [$placeholder]: number };
+type PlaceHolder = () => number;
 type Token = string | PlaceHolder;
+
+const isPlaceHolder = (x: any): x is PlaceHolder => {
+  return typeof x === "function";
+};
 
 const tokenizer = (strings: TemplateStringsArray): Token[] => {
   const length = strings.length;
@@ -23,14 +26,16 @@ const tokenizer = (strings: TemplateStringsArray): Token[] => {
           .split(/(<\/?>|<\/?|\/?>|\.{3}|'.*?'|".*?"|\s+)/)
           .filter(s => s.trim() !== $string_empty);
 
-        result = result.concat(tokens);
         inBrace = !/>$/.test(tokens[tokens.length - 1]);
+        while (tokens[0] !== undefined) {
+          result.push(tokens.shift() as Token);
+        }
       } else {
         result.push(iterator.trim());
       }
     }
 
-    result.push({ [$placeholder]: index });
+    result.push(() => index);
   }
 
   result.pop();
@@ -39,7 +44,7 @@ const tokenizer = (strings: TemplateStringsArray): Token[] => {
 };
 
 type JSXElementName = Token | typeof $fragment;
-type JSXAttributes = { [key in keyof any]: any }[];
+type JSXAttributes = ({ [key in keyof any]: any } | PlaceHolder)[];
 
 type AST = {
   jsxElementName: JSXElementName;
@@ -95,14 +100,19 @@ const parser = (tokens: Token[]) => {
         const rightTag = next();
         const rightTagName = peak();
         const rightClosingTag = peak(1);
-        const isPlaceholder = typeof jsxElementName !== "string";
 
-        if (rightTag === "</>" && isPlaceholder) {
+        if (rightTag === "</>" && isPlaceHolder(jsxElementName)) {
           // ok
         } else if (rightTag === "</" && rightClosingTag === ">") {
-          if (!isPlaceholder && jsxElementName === rightTagName) {
+          if (
+            !isPlaceHolder(jsxElementName) &&
+            jsxElementName === rightTagName
+          ) {
             // ok
-          } else if (isPlaceholder && typeof rightTagName !== "string") {
+          } else if (
+            isPlaceHolder(jsxElementName) &&
+            typeof isPlaceHolder(rightTagName)
+          ) {
             // ok
           } else {
             throw new SyntaxError(
@@ -188,9 +198,8 @@ const transpiler = (ast: JSXElement) => {
     return (h: Function, fragment: any, values: any[]) => ast;
   }
 
-  if ($placeholder in ast) {
-    return (h: Function, fragment: any, values: any[]) =>
-      values[(ast as PlaceHolder)[$placeholder]];
+  if (isPlaceHolder(ast)) {
+    return (h: Function, fragment: any, values: any[]) => values[ast()];
   }
 
   const { jsxElementName, jsxAttributes, jsxChildren } = ast as AST;
@@ -200,17 +209,17 @@ const transpiler = (ast: JSXElement) => {
     let name = jsxElementName;
     if (name === $fragment) {
       name = fragment;
-    } else if (typeof name !== "string") {
-      name = values[name[$placeholder]];
+    } else if (isPlaceHolder(name)) {
+      name = values[name()];
     }
     let attributes = jsxAttributes.reduce((p, c) => {
-      if ($placeholder in c) {
-        c = values[c[$placeholder]];
+      if (isPlaceHolder(c)) {
+        c = values[c()];
       } else {
         let key = Object.keys(c)[0];
         let value = c[key];
-        if (typeof value === "object" && $placeholder in value) {
-          value = values[value[$placeholder]];
+        if (isPlaceHolder(value)) {
+          value = values[value()];
           c = { [key]: value };
         }
       }
