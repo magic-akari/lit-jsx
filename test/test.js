@@ -12,7 +12,7 @@ const React = {
   Fragment
 };
 
-test(`shoulr parse 123`, t => {
+test(`should parse 123`, t => {
   t.is(litjsx({ React })`123`, `123`);
 });
 
@@ -235,9 +235,10 @@ test("parse 10000 tags (correctness)", t => {
 });
 
 test("parse 10000 tags 100 times (cache test)", t => {
+  const strings = [t.context.template];
   const jsx = litjsx({ React });
   for (let index = 0; index < 100; ++index) {
-    jsx([t.context.template], []);
+    jsx(strings, []);
   }
 
   t.pass();
