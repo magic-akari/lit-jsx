@@ -1,5 +1,5 @@
-const $fragment = Symbol("fragment");
-const $string_empty = "";
+const $FRAGMENT = Symbol("fragment");
+const $STRING_EMPTY = "";
 
 type PlaceHolder = () => number;
 type Token = string | PlaceHolder;
@@ -12,19 +12,19 @@ const tokenizer = (strings: TemplateStringsArray): Token[] => {
   const length = strings.length;
 
   let inBrace = false;
-  let result: Token[] = [];
+  const result: Token[] = [];
 
   for (let index = 0; index < length; ++index) {
-    const string = strings[index];
-    const block = string
+    const str = strings[index];
+    const block = str
       .split(/((?:<|^)[^<>]*?(?:>|$))/)
-      .filter(s => s.trim() !== $string_empty);
+      .filter((s) => s.trim() !== $STRING_EMPTY);
 
     for (const iterator of block) {
       if (iterator[0] === "<" || inBrace) {
-        let tokens = iterator
+        const tokens = iterator
           .split(/(<\/?>|<\/?|\/?>|\.{3}|'.*?'|".*?"|\s+)/)
-          .filter(s => s.trim() !== $string_empty);
+          .filter((s) => s.trim() !== $STRING_EMPTY);
 
         inBrace = !/>$/.test(tokens[tokens.length - 1]);
         while (tokens[0] !== undefined) {
@@ -43,15 +43,15 @@ const tokenizer = (strings: TemplateStringsArray): Token[] => {
   return result;
 };
 
-type JSXElementName = Token | typeof $fragment;
-type JSXAttributes = ({ [key in keyof any]: any } | PlaceHolder)[];
+type JSXElementName = Token | typeof $FRAGMENT;
+type JSXAttributes = Array<{ [x: string]: any } | PlaceHolder>;
 
-type AST = {
+interface IAST {
   jsxElementName: JSXElementName;
   jsxAttributes: JSXAttributes;
   jsxChildren: JSXElement[];
-};
-type JSXElement = AST | Token;
+}
+type JSXElement = IAST | Token;
 
 const parser = (tokens: Token[]) => {
   let index = 0;
@@ -69,9 +69,9 @@ const parser = (tokens: Token[]) => {
   };
 
   const getElement = (token: Token): JSXElement => {
-    let jsxElementName: JSXElementName = $fragment;
+    let jsxElementName: JSXElementName = $FRAGMENT;
     let jsxAttributes: JSXAttributes = [];
-    let jsxChildren: JSXElement[] = [];
+    const jsxChildren: JSXElement[] = [];
 
     if (token === "<>") {
       while (peak() !== "</>") {
@@ -116,13 +116,13 @@ const parser = (tokens: Token[]) => {
             // ok
           } else {
             throw new SyntaxError(
-              `unexpected token: ${rightTagName} tag not matched ${jsxElementName}`
+              `unexpected token: ${rightTagName} tag not matched ${jsxElementName}`,
             );
           }
           skip(2);
         } else {
           throw new SyntaxError(
-            `unexpected token near: ${rightTag} , ${rightTagName} and ${rightClosingTag}`
+            `unexpected token near: ${rightTag} , ${rightTagName} and ${rightClosingTag}`,
           );
         }
       }
@@ -136,7 +136,7 @@ const parser = (tokens: Token[]) => {
   };
 
   const getAttributes = (): JSXAttributes => {
-    let jsxAttributes = [];
+    const jsxAttributes = [];
 
     while (peak() !== ">" && peak() !== "/>") {
       let attributeName = next();
@@ -144,14 +144,14 @@ const parser = (tokens: Token[]) => {
 
       if (typeof attributeName !== "string") {
         throw new SyntaxError(
-          `unexpected inserted token: ${attributeName}, attributeName must be literals`
+          `unexpected inserted token: ${attributeName}, attributeName must be literals`,
         );
       }
 
       if (attributeName === "...") {
         if (typeof attributeValue === "string") {
           throw new SyntaxError(
-            `unexpected token: ${attributeValue} after: ${attributeName}`
+            `unexpected token: ${attributeValue} after: ${attributeName}`,
           );
         }
         jsxAttributes.push(attributeValue);
@@ -169,7 +169,7 @@ const parser = (tokens: Token[]) => {
             attributeValue = attributeValue.slice(1, -1);
           } else {
             throw new SyntaxError(
-              `attributeValue must be quoted: ${attributeValue}`
+              `attributeValue must be quoted: ${attributeValue}`,
             );
           }
         }
@@ -177,7 +177,7 @@ const parser = (tokens: Token[]) => {
         jsxAttributes.push({ [attributeName]: attributeValue });
       } else {
         throw new SyntaxError(
-          `unexpected token: ${attributeName} after: ${peak(-2)}`
+          `unexpected token: ${attributeName} after: ${peak(-2)}`,
         );
       }
     }
@@ -195,28 +195,28 @@ const parser = (tokens: Token[]) => {
 
 const transpiler = (ast: JSXElement) => {
   if (typeof ast === "string") {
-    return (h: Function, fragment: any, values: any[]) => ast;
+    return (h: any, fragment: any, values: any[]) => ast;
   }
 
   if (isPlaceHolder(ast)) {
-    return (h: Function, fragment: any, values: any[]) => values[ast()];
+    return (h: any, fragment: any, values: any[]) => values[ast()];
   }
 
-  const { jsxElementName, jsxAttributes, jsxChildren } = ast as AST;
-  const children = jsxChildren.map(c => transpiler(c));
+  const { jsxElementName, jsxAttributes, jsxChildren } = ast as IAST;
+  const children = jsxChildren.map((c) => transpiler(c));
 
-  return (h: Function, fragment: any, values: any[]): any => {
+  return (h: any, fragment: any, values: any[]): any => {
     let name = jsxElementName;
-    if (name === $fragment) {
+    if (name === $FRAGMENT) {
       name = fragment;
     } else if (isPlaceHolder(name)) {
       name = values[name()];
     }
-    let attributes = jsxAttributes.reduce((p, c) => {
+    const attributes = jsxAttributes.reduce((p, c) => {
       if (isPlaceHolder(c)) {
         c = values[c()];
       } else {
-        let key = Object.keys(c)[0];
+        const key = Object.keys(c)[0];
         let value = c[key];
         if (isPlaceHolder(value)) {
           value = values[value()];
@@ -227,7 +227,7 @@ const transpiler = (ast: JSXElement) => {
       return { ...p, ...c };
     }, {});
 
-    return h(name, attributes, ...children.map(c => c(h, fragment, values)));
+    return h(name, attributes, ...children.map((c) => c(h, fragment, values)));
   };
 };
 
@@ -236,10 +236,10 @@ const cache = new WeakMap();
 const litjsx = ({
   React,
   pragma,
-  pragmaFrag
+  pragmaFrag,
 }: {
   React?: any;
-  pragma?: Function;
+  pragma?: any;
   pragmaFrag?: any;
 }) => {
   let h =
