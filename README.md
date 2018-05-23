@@ -1,24 +1,45 @@
 # lit-jsx &middot; [![Build Status](https://travis-ci.org/hufan-akari/lit-jsx.svg?branch=master)](https://travis-ci.org/hufan-akari/lit-jsx)
 
-A runtime jsx parser.
+A 3kb runtime jsx parser.
 Write your jsx with tagged template literals.
 
-[lit-jsx TodoMVC Demo](https://hufan-akari.github.io/lit-jsx/examples/)
+lit-jsx is inspired by [lit-html](https://github.com/Polymer/lit-html) and [styled-components](https://github.com/styled-components/styled-components).
+
+## Demo
+
+[lit-jsx + React: TodoMVC](https://hufan-akari.github.io/lit-jsx/todomvc/)
+
+## Syntax
+
+The syntax of lit-jsx is similar to JSX. Here are differences.
+
+* You should use `${}` to pass value rather than `{}`.
+* Component should pass in `${}`.
+* you should use `...${obj}` to pass spread attributes rather than `{...obj}`.
+* if closing tag is passed by `${}`, it will be ignored. `</${tag}>` is sames as `</>`.
 
 ## Example
 
 ### HelloMessage
 
+```jsx
+// jsx
+class HelloMessage extends React.Component {
+  render() {
+    return <div>Hello,{this.props.name}</div>;
+  }
+}
+
+ReactDOM.render(<HelloMessage name="Taylor" />, mountNode);
+```
+
 ```js
+// lit-jsx
 const jsx = litjsx({ React });
 
 class HelloMessage extends React.Component {
   render() {
-    return jsx`
-      <div>
-        Hello ${this.props.name}
-      </div>
-    `;
+    return jsx`<div>Hello,${this.props.name}</div>`;
   }
 }
 
@@ -28,7 +49,8 @@ ReactDOM.render(jsx`<${HelloMessage} name="Taylor" />`, mountNode);
 ### Timer
 
 ```js
-const jsx = litjsx({ React });
+// some editor will recognise html tag function and highlight the code.
+const html = litjsx({ React });
 
 class TodoApp extends React.Component {
   constructor(props) {
@@ -39,7 +61,7 @@ class TodoApp extends React.Component {
   }
 
   render() {
-    return jsx`
+    return html`
       <div>
         <h3>TODO</h3>
         <${TodoList} items=${this.state.items} />
@@ -71,21 +93,21 @@ class TodoApp extends React.Component {
     }
     const newItem = {
       text: this.state.text,
-      id: Date.now()
+      id: Date.now(),
     };
     this.setState(prevState => ({
       items: prevState.items.concat(newItem),
-      text: ""
+      text: "",
     }));
   }
 }
 
 class TodoList extends React.Component {
   render() {
-    return jsx`
+    return html`
       <ul>
         ${this.props.items.map(
-          item => jsx`<li key=${item.id}>${item.text}</li>`
+          item => html`<li key=${item.id}>${item.text}</li>`,
         )}
       </ul>
     `;
