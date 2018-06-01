@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/hufan-akari/lit-jsx#readme",
   "devDependencies": {
-    "ava": "1.0.0-beta.4",
+    "ava": "1.0.0-beta.5",
     "rollup": "^0.59.2",
     "rollup-plugin-babel-minify": "^5.0.0",
     "rollup-plugin-typescript2": "^0.14.0",
