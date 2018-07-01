@@ -32,7 +32,7 @@
   "homepage": "https://github.com/hufan-akari/lit-jsx#readme",
   "devDependencies": {
     "ava": "1.0.0-beta.5.1",
-    "rollup": "^0.60.2",
+    "rollup": "^0.62.0",
     "rollup-plugin-babel-minify": "^5.0.0",
     "rollup-plugin-typescript2": "^0.14.0",
     "tslint": "^5.10.0",
