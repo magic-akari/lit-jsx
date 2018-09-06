@@ -1,4 +1,4 @@
-# lit-jsx &middot; [![Build Status](https://travis-ci.org/hufan-akari/lit-jsx.svg?branch=master)](https://travis-ci.org/hufan-akari/lit-jsx)
+# lit-jsx &middot; [![Build Status](https://travis-ci.org/magic-akari/lit-jsx.svg?branch=master)](https://travis-ci.org/magic-akari/lit-jsx)
 
 A 3kb runtime jsx parser.
 Write your jsx with tagged template literals.
@@ -7,7 +7,7 @@ lit-jsx is inspired by [lit-html](https://github.com/Polymer/lit-html) and [styl
 
 ## Demo
 
-[lit-jsx + React: TodoMVC](https://hufan-akari.github.io/lit-jsx/todomvc/)
+[lit-jsx + React: TodoMVC](https://magic-akari.github.io/lit-jsx/todomvc/)
 
 ## Syntax
 
