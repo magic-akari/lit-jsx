@@ -32,7 +32,7 @@
   "homepage": "https://github.com/magic-akari/lit-jsx#readme",
   "devDependencies": {
     "ava": "1.0.0-beta.6",
-    "rollup": "^0.63.5",
+    "rollup": "^0.66.2",
     "rollup-plugin-babel-minify": "^5.0.0",
     "rollup-plugin-typescript2": "^0.16.1",
     "tslint": "^5.10.0",
