@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/magic-akari/lit-jsx#readme",
   "devDependencies": {
-    "ava": "1.0.0-beta.6",
+    "ava": "1.0.0-beta.8",
     "rollup": "^0.66.2",
     "rollup-plugin-babel-minify": "^6.0.0",
     "rollup-plugin-typescript2": "^0.17.0",
