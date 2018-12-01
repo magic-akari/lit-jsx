@@ -2718,8 +2718,8 @@ rimraf@^2.2.8, rimraf@^2.6.1:
     glob "^7.0.5"
 
 rollup-plugin-babel-minify@^6.0.0:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-babel-minify/-/rollup-plugin-babel-minify-6.1.1.tgz#8fb568da0cc1ecd73e76f67c897055c21297cb81"
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-babel-minify/-/rollup-plugin-babel-minify-6.2.0.tgz#d101fa6c1ff79c67b2af91632a87284bf1bd7f8b"
   dependencies:
     "@babel/core" "^7.0.0"
     "@comandeer/babel-plugin-banner" "^4.0.0"
